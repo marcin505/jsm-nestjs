@@ -1,23 +1,23 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import type { CreateUserDTO } from './dto/create-user.dto';
+import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { UserService, User } from './user.service';
 
 @Controller('user')
 export class UserController {
-  @Get()
-  getUsers(@Query('name') name: string) {
-    if (name) {
-      const cleanName = name.replace(/[%']/g, '').toLowerCase();
-      return users.filter((user) =>
-        user.name.toLowerCase().includes(cleanName),
-      );
-    }
+  constructor(private readonly userService: UserService) {}
 
-    return users;
+  @Get()
+  getUsers(@Query('name') name: string): User[] {
+    if (name) {
+      return this.userService.findAllUsers(name);
+    }
+    return [];
   }
+
   @Get(':id')
-  getUserById(@Param('id') id: string) {
-    return users.filter((user) => user.id === Number(id));
+  getUserById(@Param('id') id: string): User | undefined {
+    return this.userService.getUserById(id);
   }
 
   @Post() // POST /user
@@ -32,8 +32,3 @@ export class UserController {
     };
   }
 }
-const users = [
-  { id: 1, name: 'John Doe' },
-  { id: 2, name: 'Killer Joe' },
-  { id: 3, name: 'Joe' },
-];
