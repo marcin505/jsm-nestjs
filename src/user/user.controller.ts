@@ -20,15 +20,13 @@ export class UserController {
     return this.userService.getUserById(id);
   }
 
-  @Post() // POST /user
+  @Post()
   createUser(@Body() createUserDTO: CreateUserDTO) {
-    return { data: createUserDTO, cessage: 'User created successfully' };
+    return this.userService.createUser(createUserDTO);
   }
-  @Put() //user/:id
+
+  @Put(':id') // Poprawione z @Put(), aby @Param('id') łapał wartość z adresu URL
   updateUser(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO) {
-    return {
-      data: { id, ...updateUserDTO },
-      message: 'User updated successfully',
-    };
+    return this.userService.updateUser(id, updateUserDTO);
   }
 }
