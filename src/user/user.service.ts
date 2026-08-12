@@ -70,6 +70,25 @@ export class UserService {
       message: 'User updated successfully',
     };
   }
+
+  deleteUser(id: string): User | undefined {
+    this.logger.log(`Deleting user with id ${id}`); // To się teraz na pewno wywoła!
+
+    const numericId = Number(id);
+    // 1. Znajdujemy użytkownika, którego chcemy usunąć (żeby go zwrócić na koniec)
+    const userToDelete = this.users.find((user) => user.id === numericId);
+
+    if (!userToDelete) {
+      this.logger.log(`User with id ${id} not found`);
+      return undefined; // Lub: throw new NotFoundException(`User not found`);
+    }
+
+    // 2. Nadpisujemy tablicę, zostawiając wszystkich OPRÓCZ usuniętego użytkownika
+    this.users = this.users.filter((user) => user.id !== numericId);
+
+    // 3. Zwracamy usuniętego użytkownika
+    return userToDelete;
+  }
 }
 
 // Zmieniłem nazwę zmiennej na initialUsers, aby nie gryzła się z typem "User[] = users"

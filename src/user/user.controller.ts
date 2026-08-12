@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { UserService, User } from './user.service';
+// import { DeleteUserDTO } from './dto/delete-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -28,5 +38,10 @@ export class UserController {
   @Put(':id') // Poprawione z @Put(), aby @Param('id') łapał wartość z adresu URL
   updateUser(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO) {
     return this.userService.updateUser(id, updateUserDTO);
+  }
+
+  @Delete(':id') // <-- DODAJ TEN DEKORATOR w okolicy linijki 43
+  deleteUser(@Param('id') id: string): User | undefined {
+    return this.userService.deleteUser(id);
   }
 }
