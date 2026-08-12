@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -11,7 +12,6 @@ import {
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { UserService, User } from './user.service';
-// import { DeleteUserDTO } from './dto/delete-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -26,7 +26,7 @@ export class UserController {
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string): User | undefined {
+  getUserById(@Param('id', ParseIntPipe) id: number): User | undefined {
     return this.userService.getUserById(id);
   }
 
@@ -36,12 +36,12 @@ export class UserController {
   }
 
   @Put(':id') // Poprawione z @Put(), aby @Param('id') łapał wartość z adresu URL
-  updateUser(@Param('id') id: string, @Body() updateUserDTO: UpdateUserDTO) {
+  updateUser(@Param('id') id: number, @Body() updateUserDTO: UpdateUserDTO) {
     return this.userService.updateUser(id, updateUserDTO);
   }
 
   @Delete(':id') // <-- DODAJ TEN DEKORATOR w okolicy linijki 43
-  deleteUser(@Param('id') id: string): User | undefined {
+  deleteUser(@Param('id') id: number): User | undefined {
     return this.userService.deleteUser(id);
   }
 }

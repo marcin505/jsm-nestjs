@@ -23,7 +23,7 @@ export class UserService {
     );
   }
 
-  getUserById(id: string = ''): User | undefined {
+  getUserById(id: number): User | undefined {
     this.logger.log(`Finding user with id ${id}`);
 
     return this.users.find((user) => user.id === Number(id));
@@ -49,7 +49,7 @@ export class UserService {
     };
   }
 
-  updateUser(id: string, updateUserDTO: UpdateUserDTO) {
+  updateUser(id: number, updateUserDTO: UpdateUserDTO) {
     this.logger.log(`Updating user with id ${id}`);
 
     const userIndex = this.users.findIndex((user) => user.id === Number(id));
@@ -71,7 +71,7 @@ export class UserService {
     };
   }
 
-  deleteUser(id: string): User | undefined {
+  deleteUser(id: number): User | undefined {
     this.logger.log(`Deleting user with id ${id}`); // To się teraz na pewno wywoła!
 
     const numericId = Number(id);

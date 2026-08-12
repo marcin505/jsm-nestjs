@@ -1,5 +1,5 @@
 {
-  "name": "jsm-nestjs", 
+  "name": "jsm-nestjs",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -38,6 +38,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/supertest": "^7.0.0",
+    "class-transformer": "^0.5.1",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
