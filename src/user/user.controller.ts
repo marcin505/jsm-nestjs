@@ -8,10 +8,12 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { UserService, User } from './user.service';
+import { RoleGuard } from 'src/guards/role.guard';
 
 @Controller('user')
 export class UserController {
@@ -40,7 +42,8 @@ export class UserController {
     return this.userService.updateUser(id, updateUserDTO);
   }
 
-  @Delete(':id') // <-- DODAJ TEN DEKORATOR w okolicy linijki 43
+  @Delete(':id')
+  @UseGuards(RoleGuard)
   deleteUser(@Param('id') id: number): User | undefined {
     return this.userService.deleteUser(id);
   }
