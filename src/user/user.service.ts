@@ -17,7 +17,7 @@ export class UserService {
     return user;
   }
 
-  async getUserById(id: number): Promise<User | null> {
+  async getUserById(id: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -27,7 +27,7 @@ export class UserService {
       user.name = user.name ?? '';
     }
 
-    return user;
+    return user as User;
   }
 
   async getUsers(): Promise<User[]> {
@@ -51,7 +51,7 @@ export class UserService {
     return user;
   }
 
-  async deleteUser(id: number): Promise<User | null> {
+  async deleteUser(id: number): Promise<User> {
     const user = await this.prisma.user.delete({
       where: { id },
     });
