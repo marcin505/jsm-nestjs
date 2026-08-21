@@ -1,99 +1,60 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { LoggerService } from './user.logger';
+// src/user/user.service.ts
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { User } from './user.type';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly logger: LoggerService) {}
+  constructor(private prisma: PrismaService) {}
 
-  private users: User[] = initialUsers; // Przypisanie początkowej listy użytkowników
-
-  findAllUsers(name: string = ''): User[] {
-    this.logger.log('Finding all users');
-
-    return this.users.filter((user) =>
-      user.name.toLowerCase().includes(name.toLowerCase()),
-    );
+  async createUser(createUserDTO: CreateUserDTO): Promise<User> {
+    const user = await this.prisma.user.create({
+      data: createUserDTO,
+    });
+    return user;
   }
 
-  getUserById(id: number): User | undefined {
-    this.logger.log(`Finding user with id ${id}`);
+  async getUserById(id: number): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
 
-    return this.users.find((user) => user.id === Number(id));
-  }
-
-  createUser(createUserDTO: CreateUserDTO) {
-    this.logger.log('Creating a new user');
-
-    // Generowanie nowego ID na podstawie najwyższego obecnego ID
-    const newId =
-      this.users.length > 0 ? Math.max(...this.users.map((u) => u.id)) + 1 : 1;
-
-    const newUser: User = {
-      ...createUserDTO,
-      id: newId, // <-- Przeniesione na dół. Teraz to pole ma ostateczny głos!
-    };
-
-    this.users.push(newUser);
-
-    return {
-      data: newUser,
-      message: 'User created successfully',
-    };
-  }
-
-  updateUser(id: number, updateUserDTO: UpdateUserDTO) {
-    this.logger.log(`Updating user with id ${id}`);
-
-    const userIndex = this.users.findIndex((user) => user.id === Number(id));
-
-    // Opcjonalnie: rzucamy błąd NestJS, jeśli użytkownik nie istnieje w tablicy
-    if (userIndex === -1) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    if (user) {
+      // Ensure that the name property is always a string
+      user.name = user.name ?? '';
     }
 
-    // Aktualizacja obiektu w tablicy
-    this.users[userIndex] = {
-      ...this.users[userIndex],
-      ...updateUserDTO,
-    };
-
-    return {
-      data: this.users[userIndex],
-      message: 'User updated successfully',
-    };
+    return user;
   }
 
-  deleteUser(id: number): User | undefined {
-    this.logger.log(`Deleting user with id ${id}`); // To się teraz na pewno wywoła!
+  async getUsers(): Promise<User[]> {
+    const users = await this.prisma.user.findMany();
 
-    const numericId = Number(id);
-    // 1. Znajdujemy użytkownika, którego chcemy usunąć (żeby go zwrócić na koniec)
-    const userToDelete = this.users.find((user) => user.id === numericId);
+    // Ensure that the name property is always a string for each user
+    return users.map((user) => ({
+      ...user,
+      name: user.name ?? '',
+    }));
+  }
 
-    if (!userToDelete) {
-      this.logger.log(`User with id ${id} not found`);
-      return undefined; // Lub: throw new NotFoundException(`User not found`);
-    }
+  async updateUser(
+    id: number,
+    updateData: UpdateUserDTO,
+  ): Promise<User | null> {
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+    return user;
+  }
 
-    // 2. Nadpisujemy tablicę, zostawiając wszystkich OPRÓCZ usuniętego użytkownika
-    this.users = this.users.filter((user) => user.id !== numericId);
-
-    // 3. Zwracamy usuniętego użytkownika
-    return userToDelete;
+  async deleteUser(id: number): Promise<User | null> {
+    const user = await this.prisma.user.delete({
+      where: { id },
+    });
+    return user;
   }
 }
-
-// Zmieniłem nazwę zmiennej na initialUsers, aby nie gryzła się z typem "User[] = users"
-const initialUsers: User[] = [
-  { id: 1, name: 'John Doe', email: 'john@example.com' },
-  { id: 2, name: 'Mel Gibson', email: 'mel@gibson.com' },
-  { id: 3, name: 'John Dutton', email: 'john@dutton.com' },
-];

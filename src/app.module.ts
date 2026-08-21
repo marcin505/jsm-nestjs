@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { ApiKeyMiddleware } from './middleware/api-key.middleware';
 import { UserController } from './user/user.controller';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [UserModule],

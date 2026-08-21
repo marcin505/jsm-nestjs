@@ -1,3 +1,5 @@
+// src/user/user.controller.ts
+
 import {
   Body,
   Controller,
@@ -12,23 +14,28 @@ import {
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-import { UserService, User } from './user.service';
+import { UserService } from './user.service';
 import { RoleGuard } from 'src/guards/role.guard';
+import { User } from './user.type';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  getUsers(@Query('name') name: string): User[] {
+  async getUsers(@Query('name') name?: string): Promise<User[]> {
     if (name) {
-      return this.userService.findAllUsers(name);
+      return this.userService
+        .getUsers()
+        .then((users) => users.filter((user) => user.name === name));
     }
-    return [];
+    return this.userService.getUsers();
   }
 
   @Get(':id')
-  getUserById(@Param('id', ParseIntPipe) id: number): User | undefined {
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<User | null> {
     return this.userService.getUserById(id);
   }
 
@@ -37,14 +44,17 @@ export class UserController {
     return this.userService.createUser(createUserDTO);
   }
 
-  @Put(':id') // Poprawione z @Put(), aby @Param('id') łapał wartość z adresu URL
-  updateUser(@Param('id') id: number, @Body() updateUserDTO: UpdateUserDTO) {
-    return this.userService.updateUser(id, updateUserDTO);
+  @Put(':id')
+  async updateUser(
+    @Param('id') id: string,
+    @Body() updateUserDTO: UpdateUserDTO,
+  ): Promise<User | null> {
+    return this.userService.updateUser(Number(id), updateUserDTO);
   }
 
   @Delete(':id')
   @UseGuards(RoleGuard)
-  deleteUser(@Param('id') id: number): User | undefined {
-    return this.userService.deleteUser(id);
+  async deleteUser(@Param('id') id: string): Promise<User | null> {
+    return this.userService.deleteUser(Number(id));
   }
 }

@@ -6,7 +6,7 @@ export class CreateUserDTO {
   @MinLength(3)
   name!: string;
 
-  @IsEmail() // <-- Dodaj walidację e-maila
+  @IsEmail()
   @IsNotEmpty()
-  email!: string; // <-- Dodaj to pole
+  email!: string;
 }
