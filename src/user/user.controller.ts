@@ -16,14 +16,15 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { RoleGuard } from 'src/guards/role.guard';
-import { User } from './user.type';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  async getUsers(@Query('name') name?: string): Promise<User[]> {
+  async getUsers(
+    @Query('name') name?: string,
+  ): Promise<Awaited<ReturnType<UserService['getUsers']>>> {
     if (name) {
       return this.userService
         .getUsers()
@@ -35,12 +36,14 @@ export class UserController {
   @Get(':id')
   async getUserById(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<User | null> {
+  ): Promise<Awaited<ReturnType<UserService['getUserById']>>> {
     return this.userService.getUserById(id);
   }
 
   @Post()
-  createUser(@Body() createUserDTO: CreateUserDTO) {
+  async createUser(
+    @Body() createUserDTO: CreateUserDTO,
+  ): Promise<Awaited<ReturnType<UserService['createUser']>>> {
     return this.userService.createUser(createUserDTO);
   }
 
@@ -48,13 +51,15 @@ export class UserController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDTO: UpdateUserDTO,
-  ): Promise<User | null> {
+  ): Promise<Awaited<ReturnType<UserService['updateUser']>>> {
     return this.userService.updateUser(Number(id), updateUserDTO);
   }
 
   @Delete(':id')
   @UseGuards(RoleGuard)
-  async deleteUser(@Param('id') id: string): Promise<User | null> {
+  async deleteUser(
+    @Param('id') id: string,
+  ): Promise<Awaited<ReturnType<UserService['deleteUser']>>> {
     return this.userService.deleteUser(Number(id));
   }
 }

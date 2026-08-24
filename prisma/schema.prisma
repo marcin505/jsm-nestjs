@@ -3,9 +3,8 @@ datasource db {
 }
 
 generator client {
- provider   = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "library"
-  output     = "../src/generated/client" // <-- Ta linijka naprawi błąd eksportu
 }
 
 model User {
