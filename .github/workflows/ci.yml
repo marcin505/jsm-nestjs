@@ -1,0 +1,22 @@
+name: NestJS CI
+
+on: [push]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # GitHub running on Linuksa
+
+    steps:
+      - name: git
+        uses: actions/checkout@v4
+
+      - name: Configure Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Type Check and Build
+        run: yarn build
