@@ -1,22 +1,48 @@
 name: NestJS CI
 
 on: [push]
+
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # GitHub running on Linuksa
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: supersecretpassword
+          POSTGRES_DB: nest_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: git
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Configure Node.js
+      - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: Create local environment file for testing
+        run: |
+          echo "DATABASE_URL=postgresql://admin:supersecretpassword@localhost:5432/nest_db?schema=public" > .env
 
-      - name: Type Check and Build
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Push Prisma schema to test database
+        run: npx prisma db push
+
+      - name: Generate Prisma client types
+        run: npx prisma generate
+
+      - name: Compile project and check TypeScript types
         run: yarn build
