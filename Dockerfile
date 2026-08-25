@@ -1,25 +1,30 @@
-# 1. Use an official Node.js runtime as a parent image (alpine is lightweight and fast)
-FROM node:20-alpine
+# Stage 1: Build the application
+FROM node:22-alpine AS builder
 WORKDIR /usr/src/jsm-nestjs
 
-# 2. Copy dependency files including yarn.lock and the prisma directory
 COPY package.json yarn.lock ./
-COPY prisma ./prisma/
 
-# 3. Install dependencies using Yarn matching the exact lockfile versions
+# Install dependencies first (better docker caching)
 RUN yarn install --frozen-lockfile
 
-# 4. Copy the rest of your application's source code
+# Copy all source files (this includes the prisma directory automatically)
 COPY . .
 
-# 5. Generate Prisma Client types (critical step before building NestJS)
-RUN npx prisma generate
+# Generate Prisma Client types
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 
-# 6. Build the application for production
+# Build the TypeScript project
 RUN yarn build
 
-# 7. Expose the port the app runs on
+# Stage 2: Run the production application
+FROM node:22-alpine
+WORKDIR /usr/src/jsm-nestjs
+
+COPY package.json yarn.lock ./
+COPY --from=builder /usr/src/jsm-nestjs/node_modules ./node_modules
+COPY --from=builder /usr/src/jsm-nestjs/dist ./dist
+COPY --from=builder /usr/src/jsm-nestjs/prisma ./prisma
+
 EXPOSE 3000
 
-# 8. Start the application using node directly for maximum production performance
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main.js"]

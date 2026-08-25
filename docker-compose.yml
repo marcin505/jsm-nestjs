@@ -4,30 +4,30 @@ services:
     build: .
     container_name: nest_api
     ports:
-      - '3000:3000' # Exposes NestJS on port 3000
+      - '3000:3000' # Exposes NestJS on port 3000 to the outside world
     environment:
-      DATABASE_URL: ${DATABASE_URL} # Reads from your local .env file
+      DATABASE_URL: ${DATABASE_URL} # Automatically reads connection string from your local .env
     depends_on:
       postgres:
-        condition: service_healthy # Wait for database to fully boot up before starting NestJS
+        condition: service_healthy # NestJS container waits until PostgreSQL is 100% active and healthy
 
-  # 2. Your Postgres Database
+  # 2. Your PostgreSQL Database
   postgres:
     image: postgres:15
     container_name: nest_postgres
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER} # Reads database admin user from .env
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Reads database admin password from .env
+      POSTGRES_DB: ${DB_NAME} # Reads database name from .env
     ports:
-      - '5432:5432'
+      - '5432:5432' # Exposes PostgreSQL on the standard port
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck: # Docker health check to monitor database readiness
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      - postgres_data:/var/lib/postgresql/data # Permanently stores database records so they don't vanish on container restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"] # Internal script verifying PostgreSQL readiness
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  postgres_data:
+  postgres_data: # Declares the named volume for database persistence
