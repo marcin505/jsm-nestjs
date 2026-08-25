@@ -1,5 +1,17 @@
 services:
-  # # 1. Usługa bazy danych
+  # 1. Your NestJS Application
+  api:
+    build: .
+    container_name: nest_api
+    ports:
+      - '3000:3000' # Exposes NestJS on port 3000
+    environment:
+      DATABASE_URL: ${DATABASE_URL} # Reads from your local .env file
+    depends_on:
+      postgres:
+        condition: service_healthy # Wait for database to fully boot up before starting NestJS
+
+  # 2. Your Postgres Database
   postgres:
     image: postgres:15
     container_name: nest_postgres
@@ -11,6 +23,11 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck: # Docker health check to monitor database readiness
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
