@@ -5,6 +5,8 @@ services:
     container_name: nest_api
     ports:
       - '3000:3000' # Exposes NestJS on port 3000 to the outside world
+    env_file:
+      - .env
     environment:
       DATABASE_URL: ${DATABASE_URL} # Automatically reads connection string from your local .env
     depends_on:

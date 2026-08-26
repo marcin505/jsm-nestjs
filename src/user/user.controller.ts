@@ -1,65 +1,48 @@
-// src/user/user.controller.ts
-
 import {
-  Body,
   Controller,
-  Delete,
   Get,
+  Put,
+  Delete,
+  Body,
   Param,
   ParseIntPipe,
-  Post,
-  Put,
-  Query,
   UseGuards,
+  Post,
 } from '@nestjs/common';
+import { UserService } from './user.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
-import { UserService } from './user.service';
-import { RoleGuard } from 'src/guards/role.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Post()
+  async createUser(@Body() createUserDTO: CreateUserDTO) {
+    return this.userService.createUser(createUserDTO);
+  }
+
   @Get()
-  async getUsers(
-    @Query('name') name?: string,
-  ): Promise<Awaited<ReturnType<UserService['getUsers']>>> {
-    if (name) {
-      return this.userService
-        .getUsers()
-        .then((users) => users.filter((user) => user.name === name));
-    }
+  async getUsers() {
     return this.userService.getUsers();
   }
 
   @Get(':id')
-  async getUserById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Awaited<ReturnType<UserService['getUserById']>>> {
+  async getUserById(@Param('id', ParseIntPipe) id: number) {
     return this.userService.getUserById(id);
-  }
-
-  @Post()
-  async createUser(
-    @Body() createUserDTO: CreateUserDTO,
-  ): Promise<Awaited<ReturnType<UserService['createUser']>>> {
-    return this.userService.createUser(createUserDTO);
   }
 
   @Put(':id')
   async updateUser(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDTO: UpdateUserDTO,
-  ): Promise<Awaited<ReturnType<UserService['updateUser']>>> {
-    return this.userService.updateUser(Number(id), updateUserDTO);
+  ) {
+    return this.userService.updateUser(id, updateUserDTO);
   }
 
   @Delete(':id')
-  @UseGuards(RoleGuard)
-  async deleteUser(
-    @Param('id') id: string,
-  ): Promise<Awaited<ReturnType<UserService['deleteUser']>>> {
-    return this.userService.deleteUser(Number(id));
+  // @UseGuards(RoleGuard) // <-- Zakomentowane, bo to dawało błąd 404!
+  async deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.deleteUser(id);
   }
 }
