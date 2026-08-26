@@ -6,9 +6,9 @@ services:
     ports:
       - '3000:3000' # Exposes NestJS on port 3000 to the outside world
     env_file:
-      - .env
+      - .env # Wskazuje plik źródłowy zmiennych
     environment:
-      DATABASE_URL: ${DATABASE_URL} # Automatically reads connection string from your local .env
+      - DATABASE_URL # Docker automatycznie pobierze prawidłową wartość z pliku .env i wstrzyknie ją do kontenera
     depends_on:
       postgres:
         condition: service_healthy # NestJS container waits until PostgreSQL is 100% active and healthy
@@ -17,6 +17,8 @@ services:
   postgres:
     image: postgres:15
     container_name: nest_postgres
+    env_file:
+      - .env # Dodane również tutaj, aby baza mogła odczytać DB_USER, DB_PASSWORD i DB_NAME
     environment:
       POSTGRES_USER: ${DB_USER} # Reads database admin user from .env
       POSTGRES_PASSWORD: ${DB_PASSWORD} # Reads database admin password from .env
@@ -26,11 +28,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data # Permanently stores database records so they don't vanish on container restarts
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"] # Internal script verifying PostgreSQL readiness
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d $${DB_NAME}"] # Poprawione na $$, aby Docker poprawnie zinterpretował zmienną wewnątrz CMD-SHELL
       interval: 5s
       timeout: 5s
       retries: 5
- # 3. Prisma Studio as container
+
+  # 3. Prisma Studio as container
   studio:
     image: node:22-alpine
     container_name: prisma_studio
@@ -39,8 +42,10 @@ services:
       - ./:/app
     ports:
       - '5555:5555' # Wystawia Prisma Studio na porcie 5555
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      - DATABASE_URL # Bezpieczne pobranie zmiennej tak samo jak w usłudze api
     command: npx prisma studio --port 5555 --browser none
     depends_on:
       postgres:

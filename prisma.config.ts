@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
@@ -7,6 +6,7 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: process.env.DATABASE_URL!,
+    // Wklejamy pełny adres URL jako zwykły tekst w pojedynczych cudzysłowach:
+    url: 'postgresql://admin:YourSuperStrongProductionPassword123!@postgres:5432/nest_db?schema=public',
   },
 });
