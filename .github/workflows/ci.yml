@@ -1,11 +1,12 @@
 name: NestJS CI
 
-on: [push]
+on: [push] # Potok uruchamia się automatycznie przy każdym wypchnięciu kodu do repozytorium
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Środowisko uruchomieniowe (czysty Linux w chmurze GitHub)
 
+    # 1. Usługi w tle (Service Containers)
     services:
       postgres:
         image: postgres:15
@@ -15,34 +16,36 @@ jobs:
           POSTGRES_DB: nest_db
         ports:
           - 5432:5432
+        # Kluczowe: GitHub Actions czeka, aż baza danych przejdzie test gotowości (Healthcheck)
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
+    # 2. Kroki potoku (Steps)
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6 # Pobranie kodu źródłowego do środowiska uruchomieniowego
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6 # Konfiguracja środowiska Node.js
         with:
-          node-version: '24.18.1'
-          cache: 'yarn'
+          node-version: '24.18.1' # Użycie najnowszej, stabilnej wersji produkcyjnej Node 24
+          cache: 'yarn' # Automatyczne cache'owanie zależności (przyspiesza kolejne uruchomienia)
 
       - name: Create local environment file for testing
         run: |
           echo "DATABASE_URL=postgresql://admin:supersecretpassword@localhost:5432/nest_db?schema=public" > .env
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile # Instalacja paczek zgodnie z plikiem yarn.lock
 
       - name: Push Prisma schema to test database
-        run: npx prisma db push
+        run: npx prisma db push # Dynamiczne wdrożenie schematu bazy danych do kontenera testowego
 
       - name: Generate Prisma client types
-        run: npx prisma generate
+        run: npx prisma generate # Generowanie silnie typowanych interfejsów TypeScript na podstawie schematu
 
       - name: Compile project and check TypeScript types
-        run: yarn build
+        run: yarn build # Kompilacja projektu (upewnia się, że nie ma błędów TypeScript / NestJS)

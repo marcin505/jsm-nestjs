@@ -158,12 +158,12 @@ To map this containerized platform architecture to production developer extensio
 
 ## 🤖 Continuous Integration (`NestJS CI`)
 
-The repository features an automated validation matrix on every code push via GitHub Actions:
+The repository features an automated validation matrix executed on every code push via GitHub Actions (`.github/workflows/nestjs-ci.yml`):
 
-- Spins up a background service container running PostgreSQL 15.
-- Confirms setup node workspace environments match strict compilation runtimes (`node v24`).
-- Validates Prisma data schemas and migrations against real database endpoints (`db push`).
-- Executes build compilations to enforce zero TypeScript errors.
+- **Isolated Infrastructure:** Automatically spins up a secure PostgreSQL 15 sidecar service container with proactive `pg_isready` healthcheck gating.
+- **Modern Node Runtime:** Enforces environment compilation constraints utilizing native Node.js `v24` runtimes across all workflow actions.
+- **Automated Schema Verification:** Validates data models natively by applying schema states (`prisma db push`) directly against the live test database container.
+- **Compilation Guardrails:** Runs `npx prisma generate` followed by `yarn build` to ensure zero runtime code degradation or TypeScript contract drift before code deployment.
 
 ---
 
