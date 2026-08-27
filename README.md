@@ -39,10 +39,10 @@ The environment features a fully automated multi-container configuration spannin
 Create a `.env` file in the root directory and append your secure credentials:
 
 ```env
-DB_USER=admin
-DB_PASSWORD=YourSuperStrongProductionPassword123!
+DB_USER=
+DB_PASSWORD=
 DB_NAME=nest_db
-DATABASE_URL=postgresql://admin:YourSuperStrongProductionPassword123!@postgres:5432/nest_db?schema=public
+DATABASE_URL=postgresql://{DB_USER}:{DB_PASSWORD}@postgres:5432/nest_db?schema=public
 ```
 
 ### 2. Launch the Microservice Stack
@@ -82,7 +82,7 @@ npx @modelcontextprotocol/inspector node dist-mcp/mcp-server.js
 Open your preferred browser engine and navigate to the assigned port interface:
 
 ```text
-http://localhost:3000
+http://127.0.0.1:6274
 ```
 
 - The dashboard automatically flags an integrated **Connected** indicator matrix.

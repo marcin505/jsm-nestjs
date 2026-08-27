@@ -9,7 +9,7 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-// POPRAWIONE: Inicjalizacja bazy danych za pomocą Driver Adaptera (tak jak w Twoim NestJS)
+// FIXED: Database initialization using Driver Adapter (just like in your NestJS setup)
 const connectionString =
   process.env.DATABASE_URL ||
   `postgresql://admin:${process.env.DB_PASSWORD}!@localhost:5432/nest_db?schema=public`;
@@ -17,7 +17,7 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// 2. Tworzenie serwera MCP
+// 2. Creating the MCP server
 const server = new Server(
   {
     name: 'nestjs-prisma-mcp-server',
@@ -25,29 +25,29 @@ const server = new Server(
   },
   {
     capabilities: {
-      tools: {}, // Deklarujemy, że nasz serwer dostarcza narzędzia (Tools)
+      tools: {}, // Declaring that our server provides Tools
     },
   },
 );
 
-// 3. Rejestracja dostępnych narzędzi dla Claude
+// 3. Registering available tools for Claude
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
         name: 'get_all_users',
         description:
-          'Pobiera listę wszystkich użytkowników z bazy danych wraz z ich rolami.',
+          'Fetches a list of all users from the database along with their roles.',
         inputSchema: { type: 'object', properties: {} },
       },
       {
         name: 'get_user_by_email',
         description:
-          'Wyszukuje konkretnego użytkownika w bazie na podstawie adresu email.',
+          'Searches for a specific user in the database based on their email address.',
         inputSchema: {
           type: 'object',
           properties: {
-            email: { type: 'string', description: 'Adres email użytkownika' },
+            email: { type: 'string', description: 'User email address' },
           },
           required: ['email'],
         },
@@ -56,7 +56,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
-// 4. Obsługa żądań wykonania narzędzi
+// 4. Handling tool execution requests
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
@@ -79,7 +79,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: 'text',
-              text: `Nie znaleziono użytkownika z mailem: ${email}`,
+              text: `No user found with email: ${email}`,
             },
           ],
         };
@@ -90,23 +90,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    throw new Error(`Narzędzie ${name} nie jest obsługiwane.`);
+    throw new Error(`Tool ${name} is not supported.`);
   } catch (error: any) {
     return {
       isError: true,
-      content: [{ type: 'text', text: `Błąd bazy danych: ${error.message}` }],
+      content: [{ type: 'text', text: `Database error: ${error.message}` }],
     };
   }
 });
 
-// 5. Uruchomienie serwera przez standardowe potoki wejścia/wyjścia (stdio)
+// 5. Starting the server via standard input/output streams (stdio)
 async function run() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Serwer MCP NestJS/Prisma został uruchomiony!');
+  console.error('NestJS/Prisma MCP Server has been started!');
 }
 
 run().catch((err) => {
-  console.error('Fatalny błąd serwera MCP:', err);
+  console.error('Fatal MCP server error:', err);
   process.exit(1);
 });
