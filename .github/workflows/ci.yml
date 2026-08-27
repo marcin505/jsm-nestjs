@@ -1,12 +1,12 @@
 name: NestJS CI
 
-on: [push] # Potok uruchamia się automatycznie przy każdym wypchnięciu kodu do repozytorium
+on: [push] # The pipeline runs automatically on every code push to the repository
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # Środowisko uruchomieniowe (czysty Linux w chmurze GitHub)
+    runs-on: ubuntu-latest # Execution environment (clean Linux cloud runner in GitHub)
 
-    # 1. Usługi w tle (Service Containers)
+    # 1. Service Containers
     services:
       postgres:
         image: postgres:15
@@ -16,36 +16,39 @@ jobs:
           POSTGRES_DB: nest_db
         ports:
           - 5432:5432
-        # Kluczowe: GitHub Actions czeka, aż baza danych przejdzie test gotowości (Healthcheck)
+        # Critical: GitHub Actions waits for the database container to pass its healthcheck
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
-    # 2. Kroki potoku (Steps)
+    # 2. Pipeline Steps
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v6 # Pobranie kodu źródłowego do środowiska uruchomieniowego
+        uses: actions/checkout@v4 # Pulls the source code into the runner environment
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6 # Konfiguracja środowiska Node.js
+        uses: actions/setup-node@v4 # Configures Node.js execution environment
         with:
-          node-version: '24.18.1' # Użycie najnowszej, stabilnej wersji produkcyjnej Node 24
-          cache: 'yarn' # Automatyczne cache'owanie zależności (przyspiesza kolejne uruchomienia)
+          node-version: '24.18.1' # Uses the stable production version of Node 24
+          cache: 'yarn' # Automatically caches dependencies to speed up consecutive workflow runs
 
       - name: Create local environment file for testing
         run: |
           echo "DATABASE_URL=postgresql://admin:supersecretpassword@localhost:5432/nest_db?schema=public" > .env
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile # Instalacja paczek zgodnie z plikiem yarn.lock
+        run: yarn install --frozen-lockfile # Installs application packages matching yarn.lock exactly
 
       - name: Push Prisma schema to test database
-        run: npx prisma db push # Dynamiczne wdrożenie schematu bazy danych do kontenera testowego
+        run: npx prisma db push # Dynamically deploys the database schema into the test container
 
       - name: Generate Prisma client types
-        run: npx prisma generate # Generowanie silnie typowanych interfejsów TypeScript na podstawie schematu
+        run: npx prisma generate # Generates strongly-typed TypeScript interfaces from the schema file
 
       - name: Compile project and check TypeScript types
-        run: yarn build # Kompilacja projektu (upewnia się, że nie ma błędów TypeScript / NestJS)
+        run: yarn build # Compiles the project to verify no compilation or NestJS module configuration errors exist
+
+      - name: Run Unit Tests and Generate Code Coverage
+        run: yarn test:cov # Executes Jest test suites and outputs the coverage matrix summary into the CI logs
