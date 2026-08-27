@@ -1,100 +1,170 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS CRUD API & Dockerized Model Context Protocol (MCP) Environment
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-ready NestJS platform integrated with Prisma ORM, PostgreSQL, GitHub Actions, and an isolated, containerized Model Context Protocol (MCP) server built with the official Anthropic SDK. This architecture enables secure, structured database context-retrieval and tool execution directly inside containerized AI agent workflows.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🛠️ Tech Stack & Ecosystem
 
-[tutorial source](https://www.youtube.com/watch?v=Q6NpiIp-6WM)
+- **Backend Framework:** NestJS (TypeScript)
+- **Database Layer:** PostgreSQL 15
+- **Data Access:** Prisma ORM featuring custom driver adapters (`@prisma/adapter-pg`) and connection pooling (`pg` `Pool`)
+- **CI/CD Pipeline:** GitHub Actions (`NestJS CI`)
+- **Containerization & Orchestration:** Docker & Docker Compose
+- **AI Tooling & Context Layer:** Model Context Protocol (MCP) SDK, Anthropic MCP Inspector
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## 🏗️ How Prisma ORM Works in This Project
 
-```bash
-$ yarn install
+Prisma acts as an advanced data abstraction and migration suite. In this ecosystem, it decouples raw database clients from application business logic through three primary steps:
+
+1. **Schema-Driven Modeling (`prisma.schema`):** Models like `User` and `Country` are declared declaratively alongside database drivers and TypeScript client generation structures.
+2. **Type-Safe Client Generation:** Running `npx prisma generate` compiles the schema definitions into deeply type-safe TypeScript interfaces, ensuring no runtime reference crashes can happen during database queries.
+3. **Advanced Driver Adapters:** Rather than utilizing direct engine binaries, this setup utilizes `@prisma/adapter-pg` tied to a native `pg` connection pool. This architecture ensures optimal scalability and resource sharing between the core NestJS API runtime and the isolated MCP server instance.
+
+---
+
+## 🚀 How to Run the Docker Compose Infrastructure
+
+The environment features a fully automated multi-container configuration spanning 4 microservices:
+
+1. `nest_api` (The core application server)
+2. `nest_postgres` (The database storage layer)
+3. `prisma_studio` (Graphical database workspace inspector)
+4. `nest_mcp_server` (Production-grade tool pipeline runner)
+
+### 1. Initialize Local Environment Variables
+
+Create a `.env` file in the root directory and append your secure credentials:
+
+```env
+DB_USER=admin
+DB_PASSWORD=YourSuperStrongProductionPassword123!
+DB_NAME=nest_db
+DATABASE_URL=postgresql://admin:YourSuperStrongProductionPassword123!@postgres:5432/nest_db?schema=public
 ```
 
-## Compile and run the project
+### 2. Launch the Microservice Stack
+
+Execute the standard orchestration engine deployment:
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+docker compose up --build -d
 ```
 
-## Run tests
+### 3. Verify Container Runtime Status
+
+Ensure all services are operational:
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+docker ps
 ```
 
-## Deployment
+The `nest_mcp_server` utilizes interactive flag overrides (`stdin_open: true`, `tty: true`, `command: tail -f /dev/null`) to preserve persistent execution boundaries for local AI tooling proxies.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🧪 Graphical Auditing & Testing via MCP Inspector
+
+To test the Model Context Protocol features without external IDE clients, use the official **Anthropic MCP Inspector web client**.
+
+### 1. Boot up the Inspection Dashboard
+
+Open a new shell directory inside your main node root environment and execute the official JSON-RPC bridge runner:
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+npx @modelcontextprotocol/inspector node dist-mcp/mcp-server.js
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 2. Access the Local Diagnostics Console
 
-## Resources
+Open your preferred browser engine and navigate to the assigned port interface:
 
-Check out a few resources that may come in handy when working with NestJS:
+```text
+http://localhost:3000
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- The dashboard automatically flags an integrated **Connected** indicator matrix.
+- Navigate into the **Tools** exploration surface tab.
+- Locate the custom database lookup hooks: `get_all_users` or `get_user_by_email`.
+- Click **Call tool** to audit real-time database context-retrieval schema parsing payloads.
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 💻 Manual CLI Interactivity & Raw JSON-RPC Verification
 
-## Stay in touch
+Since the Model Context Protocol standard communicates via standard streams (`stdio`), you can trigger tools directly via a raw terminal pipe payload without dependencies.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 1. Query Registered Tool Context Tables (Method `tools/list`)
 
-## License
+```bash
+node dist-mcp/mcp-server.js
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Paste this raw message frame directly into the terminal space and hit **Enter**:
+
+```json
+{ "jsonrpc": "2.0", "method": "tools/list", "id": 1 }
+```
+
+### 2. Request Live Database Payloads (Method `tools/call`)
+
+```bash
+node dist-mcp/mcp-server.js
+```
+
+Paste the request frame to invoke database client lookups manually:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": { "name": "get_all_users", "arguments": {} },
+  "id": 2
+}
+```
+
+### 3. Print Prettified Terminal Payloads
+
+To strip stream warnings and print perfectly aligned JSON arrays natively inside your Windows terminal, pipe input data streams like this:
+
+```powershell
+echo '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_all_users","arguments":{}},"id":2}' | node dist-mcp/mcp-server.js | node -e "process.stdin.on('data', d => { const txt = d.toString(); const jsonStart = txt.indexOf('{'); if(jsonStart === -1) return; const res = JSON.parse(txt.substring(jsonStart)); console.log(JSON.stringify(JSON.parse(res.result.content.text), null, 2)) })"
+```
+
+---
+
+## 📈 Production AI IDE Client Integration
+
+To map this containerized platform architecture to production developer extensions like **Continue** or **Roo Code**, update your global environment configuration profile settings (`config.json`):
+
+```json
+"mcpServers": {
+  "nestjs-prisma-mcp-server": {
+    "command": "docker",
+    "args": [
+      "exec",
+      "-i",
+      "nest_mcp_server",
+      "node",
+      "dist-mcp/mcp-server.js"
+    ]
+  }
+}
+```
+
+---
+
+## 🤖 Continuous Integration (`NestJS CI`)
+
+The repository features an automated validation matrix on every code push via GitHub Actions:
+
+- Spins up a background service container running PostgreSQL 15.
+- Confirms setup node workspace environments match strict compilation runtimes (`node v24`).
+- Validates Prisma data schemas and migrations against real database endpoints (`db push`).
+- Executes build compilations to enforce zero TypeScript errors.
+
+---
+
+_Developed as an independent architectural milestone verifying containerized AI tool connectivity frameworks._

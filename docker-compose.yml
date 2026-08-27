@@ -50,6 +50,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  # 4. Custom MCP Server for AI Agents
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    container_name: nest_mcp_server
+    command: tail -f /dev/null # <--- Zmusza kontener do bezczynnego stania w tle
+    env_file:
+      - .env
+    environment:
+      # Wewnątrz sieci Dockera łączymy się z kontenerem bazy danych, używając jego nazwy: 'postgres'
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy 
 
 volumes:
   postgres_data: # Declares the named volume for database persistence
