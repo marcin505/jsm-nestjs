@@ -60,6 +60,60 @@
     ora "5.4.1"
     rxjs "7.8.1"
 
+"@anthropic-ai/claude-code-darwin-arm64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-darwin-arm64/-/claude-code-darwin-arm64-2.1.250.tgz#b94d9d62c611d86dedb82a8db2add970f1448eb1"
+  integrity sha512-THGQj2+aPMXrHpEbBFE/4PzJYK1Y9NlKdo+KhizGK020pZMBLP11KyeeBTm8HUJ5ZHeWIyB7ohwbQoZ7ttKGPA==
+
+"@anthropic-ai/claude-code-darwin-x64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-darwin-x64/-/claude-code-darwin-x64-2.1.250.tgz#410577d4114847e3311fe1353611e5e2d199aa60"
+  integrity sha512-IF1MlGV5zT60a2fCsRgLyuvlRODrfMfKfhfvdqxPgax0bNaatqzqodZ9n23o2m2QIksHo5HF3T2Oe3frE+8l6Q==
+
+"@anthropic-ai/claude-code-linux-arm64-musl@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-linux-arm64-musl/-/claude-code-linux-arm64-musl-2.1.250.tgz#65493b0217cd125ba55b641d61e8d271235229d6"
+  integrity sha512-GSDQ9LSnHojpXCcI/Zru8wWIoa+Kbgk4aHpc3/AneuGgGbNKbnj2Hi9awLYSuOqRg+MmmeQCM+r/4gCUSqyOrA==
+
+"@anthropic-ai/claude-code-linux-arm64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-linux-arm64/-/claude-code-linux-arm64-2.1.250.tgz#9b0cfe0f09bfcc0d20b3adebb1119364be196390"
+  integrity sha512-NVbdmP9kLenUGdPjSS9p+XTY0CqC+pjWo3sJMM4DrCOlUeJLqKcAB9f9+IvG5PHBAfDbcEstXjeGqDVavsvLMA==
+
+"@anthropic-ai/claude-code-linux-x64-musl@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-linux-x64-musl/-/claude-code-linux-x64-musl-2.1.250.tgz#212f992c714a33a177bd0a71314da173f72ea317"
+  integrity sha512-1IQRUb51+KckMKTuNUJb+666ioPsY0E5NR5jI2iSKfdkzu5iRjyXQtOkn5qSUnRh7DPobx64g7sZHWJQoUvOuQ==
+
+"@anthropic-ai/claude-code-linux-x64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.250.tgz#3e50170b2fa24f14afbe530a5acd24bb1b2c7a9c"
+  integrity sha512-8bNQMnhl9p1j/xQ36vj/ghZrPQo1sm5OUJKbG+kQSVfOzhpsKWnOtrTY/xzABqUDd6lY6r7Tom7O9IXOq6gsHA==
+
+"@anthropic-ai/claude-code-win32-arm64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-win32-arm64/-/claude-code-win32-arm64-2.1.250.tgz#8f79a9822bdb63428038eea2509b14d873d2dcf6"
+  integrity sha512-e1GS0M6TXnZK17xwSxmPGR3RtErMKp9vyYcEt3iMLk5aae/gl+dvIQxzu4uNawPBtfQehygI1tHbArIEWd9f7g==
+
+"@anthropic-ai/claude-code-win32-x64@2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code-win32-x64/-/claude-code-win32-x64-2.1.250.tgz#89d48bed05cead02e3f207f22ecc1a1f7fca651c"
+  integrity sha512-LguXPu3lFuByqyQOy0xIB2XhFl6jlODUSP81xt9Xpgf5Ha7YyOLg7g1lSkZXfWx7jpNq6E5QtFbsfyJzSFsFvg==
+
+"@anthropic-ai/claude-code@^2.1.250":
+  version "2.1.250"
+  resolved "https://registry.yarnpkg.com/@anthropic-ai/claude-code/-/claude-code-2.1.250.tgz#c1f98486969b39f115762ec3bcd27684144384b4"
+  integrity sha512-SsqdHBePKgpoquZdMPbwSZZc2PkQy/qBcekroihILhRdPAAtpXXH49POHl7e6bujj55MaKPk4Wa7gpFXuMKwnA==
+  optionalDependencies:
+    "@anthropic-ai/claude-code-darwin-arm64" "2.1.250"
+    "@anthropic-ai/claude-code-darwin-x64" "2.1.250"
+    "@anthropic-ai/claude-code-linux-arm64" "2.1.250"
+    "@anthropic-ai/claude-code-linux-arm64-musl" "2.1.250"
+    "@anthropic-ai/claude-code-linux-x64" "2.1.250"
+    "@anthropic-ai/claude-code-linux-x64-musl" "2.1.250"
+    "@anthropic-ai/claude-code-win32-arm64" "2.1.250"
+    "@anthropic-ai/claude-code-win32-x64" "2.1.250"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.16.7", "@babel/code-frame@^7.27.1", "@babel/code-frame@^7.29.7":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.29.7.tgz#f2fbbfea87c44a21590ec515b778b2c26d8866e7"

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "nestjs-prisma": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["ts-node", "src/mcp/mcp-server.ts"],
+      "env": {}
+    }
+  }
+}

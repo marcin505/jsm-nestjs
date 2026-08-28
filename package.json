@@ -22,6 +22,7 @@
     "build:mcp": "tsc src/mcp/mcp-server.ts --outDir dist-mcp --module commonjs --target es2022 --moduleResolution node --esModuleInterop true"
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "^2.1.250",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
