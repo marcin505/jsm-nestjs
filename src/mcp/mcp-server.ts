@@ -10,9 +10,15 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 // FIXED: Database initialization using Driver Adapter (just like in your NestJS setup)
-const connectionString =
+let connectionString =
   process.env.DATABASE_URL ||
   `postgresql://admin:${process.env.DB_PASSWORD}!@localhost:5432/nest_db?schema=public`;
+
+// If URL contains doecker host - 'postgres' replace it with localhost for the local environment
+if (connectionString.includes('@postgres:')) {
+  connectionString = connectionString.replace('@postgres:', '@localhost:');
+}
+
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
