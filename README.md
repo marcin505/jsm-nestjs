@@ -15,16 +15,6 @@ A production-ready NestJS platform integrated with Prisma ORM, PostgreSQL, GitHu
 
 ---
 
-## 🏗️ How Prisma ORM Works in This Project
-
-Prisma acts as an advanced data abstraction and migration suite. In this ecosystem, it decouples raw database clients from application business logic through three primary steps:
-
-1. **Schema-Driven Modeling (`prisma.schema`):** Models like `User` and `Country` are declared declaratively alongside database drivers and TypeScript client generation structures.
-2. **Type-Safe Client Generation:** Running `npx prisma generate` compiles the schema definitions into deeply type-safe TypeScript interfaces, ensuring no runtime reference crashes can happen during database queries.
-3. **Advanced Driver Adapters:** Rather than utilizing direct engine binaries, this setup utilizes `@prisma/adapter-pg` tied to a native `pg` connection pool. This architecture ensures optimal scalability and resource sharing between the core NestJS API runtime and the isolated MCP server instance.
-
----
-
 ## 🚀 How to Run the Docker Compose Infrastructure
 
 The environment features a fully automated multi-container configuration spanning 4 microservices:
@@ -61,6 +51,48 @@ Ensure all services are operational:
 docker ps
 ```
 
+## 🤖 AI Tooling & Context Engineering (Model Context Protocol)
+
+This repository includes a custom **Model Context Protocol (MCP)** server built with the official Anthropic TypeScript SDK. It creates a secure abstraction layer that connects LLM clients (like Claude Desktop) directly to our local PostgreSQL database through the existing Prisma ORM setup.
+
+### 🛠️ Available MCP Tools
+
+- `get_all_users` – Fetches a secure list of registered users (IDs and emails only) to provide operational insights.
+- `get_database_stats` – Returns live record counters across core entities to monitor database health and seed states.
+- `update_user_role` - updates user role, prompt example: "promote Bruce Wayne to Admin"
+
+### 🚀 Local Setup & Integration
+
+#### 1. Prerequisites
+
+Ensure your local PostgreSQL container is up and running via Docker Compose:
+
+```bash
+docker compose up -d postgres
+```
+
+#### 2. Configure Claude Desktop
+
+Add the following configuration to your `claude_desktop_config.json` file.
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+  "mcpServers": {
+    "nestjs-prisma-mcp-server": {
+      "command": "node",
+      "args": [
+        "F:\\DevProjects\\jsm-nestjs\\dist-mcp\\mcp-server.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "DATABASE_URL": "postgresql://{user}:{password}@postgres:5432/nest_db?schema=public"
+      }
+    }
+  }
+```
+
 The `nest_mcp_server` utilizes interactive flag overrides (`stdin_open: true`, `tty: true`, `command: tail -f /dev/null`) to preserve persistent execution boundaries for local AI tooling proxies.
 
 ---
@@ -92,70 +124,6 @@ http://127.0.0.1:6274
 
 ---
 
-## 💻 Manual CLI Interactivity & Raw JSON-RPC Verification
-
-Since the Model Context Protocol standard communicates via standard streams (`stdio`), you can trigger tools directly via a raw terminal pipe payload without dependencies.
-
-### 1. Query Registered Tool Context Tables (Method `tools/list`)
-
-```bash
-node dist-mcp/mcp-server.js
-```
-
-Paste this raw message frame directly into the terminal space and hit **Enter**:
-
-```json
-{ "jsonrpc": "2.0", "method": "tools/list", "id": 1 }
-```
-
-### 2. Request Live Database Payloads (Method `tools/call`)
-
-```bash
-node dist-mcp/mcp-server.js
-```
-
-Paste the request frame to invoke database client lookups manually:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": { "name": "get_all_users", "arguments": {} },
-  "id": 2
-}
-```
-
-### 3. Print Prettified Terminal Payloads
-
-To strip stream warnings and print perfectly aligned JSON arrays natively inside your Windows terminal, pipe input data streams like this:
-
-```powershell
-echo '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_all_users","arguments":{}},"id":2}' | node dist-mcp/mcp-server.js | node -e "process.stdin.on('data', d => { const txt = d.toString(); const jsonStart = txt.indexOf('{'); if(jsonStart === -1) return; const res = JSON.parse(txt.substring(jsonStart)); console.log(JSON.stringify(JSON.parse(res.result.content.text), null, 2)) })"
-```
-
----
-
-## 📈 Production AI IDE Client Integration
-
-To map this containerized platform architecture to production developer extensions like **Continue** or **Roo Code**, update your global environment configuration profile settings (`config.json`):
-
-```json
-"mcpServers": {
-  "nestjs-prisma-mcp-server": {
-    "command": "docker",
-    "args": [
-      "exec",
-      "-i",
-      "nest_mcp_server",
-      "node",
-      "dist-mcp/mcp-server.js"
-    ]
-  }
-}
-```
-
----
-
 ## 🤖 Continuous Integration (`NestJS CI`)
 
 The repository features an automated validation matrix executed on every code push via GitHub Actions (`.github/workflows/nestjs-ci.yml`):
@@ -164,6 +132,16 @@ The repository features an automated validation matrix executed on every code pu
 - **Modern Node Runtime:** Enforces environment compilation constraints utilizing native Node.js `v24` runtimes across all workflow actions.
 - **Automated Schema Verification:** Validates data models natively by applying schema states (`prisma db push`) directly against the live test database container.
 - **Compilation Guardrails:** Runs `npx prisma generate` followed by `yarn build` to ensure zero runtime code degradation or TypeScript contract drift before code deployment.
+
+---
+
+## 🏗️ How Prisma ORM Works in This Project
+
+Prisma acts as an advanced data abstraction and migration suite. In this ecosystem, it decouples raw database clients from application business logic through three primary steps:
+
+1. **Schema-Driven Modeling (`prisma.schema`):** Models like `User` and `Country` are declared declaratively alongside database drivers and TypeScript client generation structures.
+2. **Type-Safe Client Generation:** Running `npx prisma generate` compiles the schema definitions into deeply type-safe TypeScript interfaces, ensuring no runtime reference crashes can happen during database queries.
+3. **Advanced Driver Adapters:** Rather than utilizing direct engine binaries, this setup utilizes `@prisma/adapter-pg` tied to a native `pg` connection pool. This architecture ensures optimal scalability and resource sharing between the core NestJS API runtime and the isolated MCP server instance.
 
 ---
 

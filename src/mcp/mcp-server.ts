@@ -5,7 +5,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -58,6 +58,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['email'],
         },
       },
+      {
+        name: 'update_user_role',
+        description: 'Updates the role of a specific user in the database.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            userId: {
+              type: 'number',
+              description: 'The unique ID of the user',
+            },
+            newRole: {
+              type: 'string',
+              description: 'The new role to assign (e.g., ADMIN, USER)',
+            },
+          },
+          required: ['userId', 'newRole'],
+        },
+      },
     ],
   };
 });
@@ -93,6 +111,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       return {
         content: [{ type: 'text', text: JSON.stringify(user, null, 2) }],
+      };
+    }
+
+    if (name === 'update_user_role') {
+      const { userId, newRole } = args as { userId: number; newRole: string };
+
+      // Wykonujemy aktualizację w bazie przez Prismę
+      const updatedUser = await prisma.user.update({
+        where: { id: Number(userId) },
+        data: { role: newRole.toUpperCase() as Role },
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Success! User ${updatedUser.name} (ID: ${updatedUser.id}) has been updated to role: ${updatedUser.role}.`,
+          },
+        ],
       };
     }
 
