@@ -2,15 +2,29 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { KafkaService } from 'src/kafka/kafka.service'; // <-- Import Twojego serwisu Kafki
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  // 1. Wstrzyknięcie KafkaService obok PrismaService
+  constructor(
+    private prisma: PrismaService,
+    private kafkaService: KafkaService,
+  ) {}
 
   async createUser(createUserDTO: CreateUserDTO) {
     const user = await this.prisma.user.create({
       data: createUserDTO,
     });
+
+    // Event: Użytkownik został zarejestrowany
+    this.kafkaService.emitEvent('user.created', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+    });
+
     return user;
   }
 
@@ -40,6 +54,17 @@ export class UserService {
       where: { id },
       data: updateData,
     });
+
+    // Event: Dane użytkownika (lub jego rola w systemie) uległy zmianie
+    this.kafkaService.emitEvent('user.updated', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      updatedAt: user.updatedAt,
+      // Przekazujemy klucze, które rzeczywiście się zmieniły
+      changes: Object.keys(updateData),
+    });
+
     return user;
   }
 
@@ -47,6 +72,13 @@ export class UserService {
     const user = await this.prisma.user.delete({
       where: { id },
     });
+
+    // Event: Konto usunięte (np. trigger dla Notification Service, by wysłać pożegnalny e-mail)
+    this.kafkaService.emitEvent('user.deleted', {
+      id: user.id,
+      email: user.email,
+    });
+
     return user;
   }
 }
