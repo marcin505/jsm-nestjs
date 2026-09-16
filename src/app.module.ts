@@ -5,9 +5,15 @@ import { UserModule } from './user/user.module';
 import { ApiKeyMiddleware } from './middleware/api-key.middleware';
 import { UserController } from './user/user.controller';
 import { PrismaService } from './prisma/prisma.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    UserModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // <-- 2. KLUCZOWE: serwis będzie widoczny we wszystkich modułach automatycznie
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -26,7 +26,7 @@ export class KafkaService implements OnApplicationBootstrap, OnModuleDestroy {
       // 2. Budujemy silnik kafkajs
       const kafkaJS = new Kafka({
         clientId: 'nest-api-consumer',
-        brokers: ['kafka:9092'],
+        brokers: [process.env.KAFKA_BROKER || 'kafka:9092'], // Pobiera z .env, a w razie braku daje fallbac
       });
 
       // --- WYMUSZENIE UTWORZENIA TEMATÓW PRZEZ ADMIN API (STANDARD ENTERPRISE) ---
