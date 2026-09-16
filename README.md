@@ -1,14 +1,15 @@
-# NestJS CRUD API & Dockerized Model Context Protocol (MCP) Environment
+# NestJS CRUD API & Dockerized Model Context Protocol (MCP) Environment with Apache Kafka
 
-A production-ready NestJS platform integrated with Prisma ORM, PostgreSQL, GitHub Actions, and an isolated, containerized Model Context Protocol (MCP) server built with the official Anthropic SDK. This architecture enables secure, structured database context-retrieval and tool execution directly inside containerized AI agent workflows.
+A production-ready NestJS platform integrated with Prisma ORM, PostgreSQL, GitHub Actions, an isolated, containerized Model Context Protocol (MCP) server built with the official Anthropic SDK, and an asynchronous **Apache Kafka (KRaft mode)** messaging backbone. This architecture enables secure, structured database context-retrieval, real-time distributed event streaming, and tool execution directly inside containerized AI agent workflows.
 
 ---
 
 ## 🛠️ Tech Stack & Ecosystem
 
-- **Backend Framework:** NestJS (TypeScript)
+- **Backend Framework:** NestJS v10 (TypeScript, Hybrid Application Architecture)
 - **Database Layer:** PostgreSQL 15
 - **Data Access:** Prisma ORM featuring custom driver adapters (`@prisma/adapter-pg`) and connection pooling (`pg` `Pool`)
+- **Message Broker & Streaming:** Apache Kafka v3.7.0 (ZooKeeperless **KRaft mode**) using `kafkajs` streams
 - **CI/CD Pipeline:** GitHub Actions (`NestJS CI`)
 - **Containerization & Orchestration:** Docker & Docker Compose
 - **AI Tooling & Context Layer:** Model Context Protocol (MCP) SDK, Claude Code CLI (`.mcp.json` project-scoped server), Anthropic MCP Inspector
@@ -17,22 +18,26 @@ A production-ready NestJS platform integrated with Prisma ORM, PostgreSQL, GitHu
 
 ## 🚀 How to Run the Docker Compose Infrastructure
 
-The environment features a fully automated multi-container configuration spanning 4 microservices:
+The environment features a fully automated multi-container configuration spanning 5 microservices:
 
-1. `nest_api` (The core application server)
-2. `nest_postgres` (The database storage layer)
-3. `prisma_studio` (Graphical database workspace inspector)
-4. `nest_mcp_server` (Production-grade tool pipeline runner)
+1. `api` (The core application server)
+2. `postgres` (The database storage layer)
+3. `kafka` (The Apache Kafka KRaft broker serving internal `9092` and host-exposed `9094` networks)
+4. `prisma_studio` (Graphical database workspace inspector)
+5. `mcp-server` (Production-grade tool pipeline runner)
 
 ### 1. Initialize Local Environment Variables
 
 Create a `.env` file in the root directory and append your secure credentials:
 
 ```env
-DB_USER=
+DB_USER=admin
 DB_PASSWORD=
 DB_NAME=nest_db
-DATABASE_URL=postgresql://{DB_USER}:{DB_PASSWORD}@postgres:5432/nest_db?schema=public
+DATABASE_URL=postgresql://{user}:{password}@postgres:5432/nest_db?schema=public
+
+# Apache Kafka Configuration
+KAFKA_BROKER=kafka:9092
 ```
 
 ### 2. Launch the Microservice Stack
@@ -49,7 +54,12 @@ Ensure all services are operational:
 
 ```bash
 docker ps
+docker logs -f nest_api
 ```
+
+_Expected confirmation log:_ `📥 Konsument Kafki jest w 100% aktywny i gotowy na eventy!`
+
+---
 
 ## 🤖 AI Tooling & Context Engineering (Model Context Protocol)
 
@@ -59,11 +69,11 @@ This repository includes a custom **Model Context Protocol (MCP)** server built 
 
 The server (`src/mcp/mcp-server.ts`) exposes three tools over the **stdio** transport:
 
-| Tool | Input | Description |
-| --- | --- | --- |
-| `get_all_users` | _(none)_ | Fetches all users from the database along with their roles, ordered by `createdAt` descending. |
-| `get_user_by_email` | `email: string` | Searches for a specific user by email address. Returns a plain-text notice when no match exists. |
-| `update_user_role` | `userId: number`, `newRole: string` | Updates the role of a specific user (`ADMIN`, `USER`, …). The role is upper-cased before it is written. |
+| Tool                | Input                               | Description                                                                                                                        |
+| ------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `get_all_users`     | _(none)_                            | Fetches all users from the database along with their roles, ordered by `createdAt` descending.                                     |
+| `get_user_by_email` | `email: string`                     | Searches for a specific user by email address. Returns a plain-text notice when no match exists.                                   |
+| `update_user_role`  | `userId: number`, `newRole: string` | Updates the role of a specific user (`ADMIN`, `USER`, …) **AND broadcasts a `user.role.updated` event** to Kafka over port `9094`. |
 
 Example prompts once the server is connected:
 
@@ -77,6 +87,7 @@ Example prompts once the server is connected:
 - Diagnostics are written to `stderr` (`console.error`) so they never corrupt the protocol stream on `stdout`.
 - Database access reuses the same Prisma driver-adapter setup as the API (`@prisma/adapter-pg` over a `pg` `Pool`).
 - `DATABASE_URL` is read from the environment (or `.env` via `dotenv/config`). If the URL points at the Docker service host (`@postgres:`), the server rewrites it to `@localhost:` so the same connection string works both inside and outside Compose.
+- **Multi-Channel Kafka Gateway:** The Kafka broker exposes port `9092` for internal docker containers (NestJS), and port `9094` for host machine slots (the local MCP server process), ensuring that AI mutations instantly publish to the system event stream.
 
 ### 🚀 Local Setup & Integration
 
@@ -85,7 +96,7 @@ Example prompts once the server is connected:
 Ensure your local PostgreSQL container is up and running via Docker Compose:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres kafka
 ```
 
 Generate the Prisma Client so the MCP server can query the schema:
@@ -168,7 +179,7 @@ claude mcp remove nestjs-prisma --scope project
 Inside an interactive `claude` session:
 
 - `/mcp` — lists connected servers, their tools, and lets you re-authenticate or reconnect.
-- `claude --debug` — surfaces the server's `stderr` output, including `NestJS/Prisma MCP Server has been started!` and any `Fatal MCP server error:` traces.
+- `claude --debug` — surfaces the server's `stderr` output, including `NestJS/Prisma MCP Server has been started!`, Kafka producer connection logs, and any `Fatal MCP server error:` traces.
 
 ### Calling the tools
 
@@ -191,16 +202,17 @@ You normally just ask in natural language ("show me every user and their role") 
 }
 ```
 
-`update_user_role` writes to the database, so leaving it out of the allowlist keeps a confirmation step in front of every mutation.
+`update_user_role` writes to the database and dispatches network payloads to Kafka, so leaving it out of the allowlist keeps a confirmation step in front of every mutation.
 
 ### Troubleshooting
 
-| Symptom | Likely cause |
-| --- | --- |
-| Server shows as `failed` in `claude mcp list` | Postgres is not running (`docker compose up -d postgres`) or `DATABASE_URL` is unset. |
-| `Cannot find module '@prisma/client'` | Prisma Client was never generated — run `npx prisma generate`. |
-| Connection refused on port 5432 | The URL points at the Docker-internal host; the server rewrites `@postgres:` to `@localhost:`, but any other hostname is used verbatim. |
-| Tools do not appear | The project-scope approval prompt was declined — reset it with `claude mcp reset-project-choices`. |
+| Symptom                                       | Likely cause                                                                          | Resolution                                                                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Server shows as `failed` in `claude mcp list` | Postgres is not running (`docker compose up -d postgres`) or `DATABASE_URL` is unset. | Ensure infrastructure containers are active.                                                                                         |
+| `Cannot find module '@prisma/client'`         | Prisma Client was never generated.                                                    | Run `npx prisma generate`.                                                                                                           |
+| Connection refused on port 5432               | The URL points at the Docker-internal host.                                           | The server rewrites `@postgres:` to `@localhost:`, but any other hostname is used verbatim.                                          |
+| Tools do not appear                           | The project-scope approval prompt was declined.                                       | Reset choices with `claude mcp reset-project-choices`.                                                                               |
+| `UNKNOWN_TOPIC_OR_PARTITION`                  | Client queried topic before initialization.                                           | The system features a built-in **Kafka Admin Client wrapper** that auto-provisions necessary topics (`user.created`, etc.) on start. |
 
 ---
 

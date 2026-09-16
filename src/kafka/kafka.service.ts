@@ -85,6 +85,10 @@ export class KafkaService implements OnApplicationBootstrap, OnModuleDestroy {
         topic: 'user.deleted',
         fromBeginning: false,
       });
+      await this.nativeConsumer.subscribe({
+        topic: 'user.role.updated',
+        fromBeginning: false,
+      });
 
       await this.nativeConsumer.run({
         eachMessage: async ({ topic, partition, message }) => {
